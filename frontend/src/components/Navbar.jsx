@@ -25,7 +25,6 @@ const Navbar = () => {
                 <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/80">
                     <a href="/#features" className="hover:text-white hover:text-shadow-sm transition-all duration-200">Features</a>
                     <a href="/#demo" className="hover:text-white hover:text-shadow-sm transition-all duration-200">Live Demo</a>
-                    <a href="/#pricing" className="hover:text-white hover:text-shadow-sm transition-all duration-200">Pricing</a>
                 </div>
 
                 {/* Actions */}
@@ -33,9 +32,6 @@ const Navbar = () => {
                     <Link to="/auth" className="hidden md:flex items-center gap-2 text-white/80 hover:text-white transition-colors duration-200 text-sm font-medium">
                         <User size={18} />
                         <span>Login</span>
-                    </Link>
-                    <Link to="/auth" className="glass-button-primary text-sm flex items-center">
-                        Get Started
                     </Link>
                     <button className="md:hidden text-white/80">
                         <Menu size={24} />

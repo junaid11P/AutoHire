@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Building2, UserCircle, Briefcase, Mail, Lock, User, Eye, EyeOff, Code2 } from 'lucide-react';
 
@@ -7,7 +8,105 @@ const Auth = () => {
     const [isLogin, setIsLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
 
-    const toggleAuthMode = () => setIsLogin(!isLogin);
+    // Form and API states
+    const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
+    const navigate = useNavigate();
+
+    const handleInputChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const toggleAuthMode = () => {
+        setIsLogin(!isLogin);
+        setError('');
+        setFormData({ name: '', email: '', password: '' });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError('');
+
+        try {
+            if (isLogin) {
+                // Login
+                const params = new URLSearchParams();
+                params.append('username', formData.email);
+                params.append('password', formData.password);
+
+                const response = await fetch('http://localhost:8000/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: params,
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.detail || 'Login failed');
+                }
+
+                const data = await response.json();
+                localStorage.setItem('token', data.access_token);
+                localStorage.setItem('role', data.role);
+                localStorage.setItem('user_id', data.user_id);
+
+                navigate(data.role === 'company' ? '/company-dashboard' : '/seeker-dashboard');
+            } else {
+                // Signup
+                const payload = {
+                    name: formData.name,
+                    email: formData.email,
+                    password: formData.password,
+                    role: role,
+                };
+                if (role === 'company') {
+                    payload.company_name = formData.name;
+                }
+
+                const response = await fetch('http://localhost:8000/api/v1/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.detail || 'Signup failed');
+                }
+
+                // Automatically login to save clicks
+                const loginParams = new URLSearchParams();
+                loginParams.append('username', formData.email);
+                loginParams.append('password', formData.password);
+                const loginResponse = await fetch('http://localhost:8000/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: loginParams,
+                });
+
+                if (loginResponse.ok) {
+                    const loginData = await loginResponse.json();
+                    localStorage.setItem('token', loginData.access_token);
+                    localStorage.setItem('role', loginData.role);
+                    localStorage.setItem('user_id', loginData.user_id);
+                    navigate(loginData.role === 'company' ? '/company-dashboard' : '/seeker-dashboard');
+                } else {
+                    setIsLogin(true); // Switch to login screen if automatic login fails
+                    setError('Account created securely. Please sign in to continue.');
+                }
+            }
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <div className="min-h-[85vh] flex items-center justify-center relative overflow-hidden px-4 md:px-0 mt-8 mb-20 z-10">
@@ -104,13 +203,23 @@ const Auth = () => {
                             exit={{ opacity: 0, x: -20 }}
                             transition={{ duration: 0.3 }}
                             className="flex flex-col gap-4 flex-1 justify-center"
+                            onSubmit={handleSubmit}
                         >
+
+                            {error && (
+                                <div className="text-red-400 bg-red-400/10 p-3 rounded-lg text-sm mb-2 border border-red-500/20">
+                                    {error}
+                                </div>
+                            )}
 
                             {!isLogin && (
                                 <div className="relative group">
                                     <User className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-accent transition-colors" size={18} />
                                     <input
                                         type="text"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleInputChange}
                                         placeholder={role === 'seeker' ? 'Full Name' : 'Company Name'}
                                         className="glass-input pl-11 py-3.5"
                                         required
@@ -122,6 +231,9 @@ const Auth = () => {
                                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-accent transition-colors" size={18} />
                                 <input
                                     type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleInputChange}
                                     placeholder={role === 'seeker' ? 'Email Address' : 'Work Email'}
                                     className="glass-input pl-11 py-3.5"
                                     required
@@ -132,6 +244,9 @@ const Auth = () => {
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-accent transition-colors" size={18} />
                                 <input
                                     type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleInputChange}
                                     placeholder="Password"
                                     className="glass-input pl-11 pr-11 py-3.5"
                                     required
@@ -151,8 +266,14 @@ const Auth = () => {
                                 </div>
                             )}
 
-                            <button type="submit" className="glass-button-primary w-full py-3.5 mt-4 flex items-center justify-center gap-2">
-                                {isLogin ? (
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="glass-button-primary w-full py-3.5 mt-4 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isLoading ? (
+                                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                ) : isLogin ? (
                                     <>Sign In <Lock size={16} /></>
                                 ) : (
                                     <>Create Account <UserCircle size={16} /></>

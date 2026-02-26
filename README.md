@@ -90,3 +90,60 @@ Final Report to Company
 | **Backend**           | FastAPI                                         |
 | **Database**          | MongoDB Atlas (+ Vector Search)                 |
 | **Hosting**           | Oracle Cloud Free Tier, Vercel                  |
+
+## 🏃‍♂️ How to Run Locally
+
+### 1. Prerequisites
+Ensure you have the following installed on your machine:
+- **Node.js**: (v18+)
+- **Python**: (v3.10+)
+- **MongoDB Atlas Cluster**: (Free Tier) - You will need your MongoDB URI and must enable Vector Search capabilities per the documentation.
+
+### 2. Configure Environment Variables
+Navigate to the `/backend` directory and configure the `.env` file with your API keys. You will need:
+```env
+# Backend .env
+MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/
+JWT_SECRET_KEY=your_secure_random_key_here
+GROQ_API_KEY=gsk_your_groq_api_token
+```
+
+### 3. Start the FastAPI Backend
+Open a new terminal session, navigate to the `backend` folder, and run the following commands to install dependencies and boot the Python server.
+
+```bash
+cd backend
+
+# Create and activate a virtual environment (optional but recommended)
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
+
+# Install the dependencies
+pip install -r requirements.txt
+
+# Start the uvicorn development server
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+*The backend will be available at: http://localhost:8000*
+
+### 4. Start the React Frontend
+Open a **second terminal session**, navigate to the `frontend` folder, install the NPM packages, and boot the frontend via Vite.
+
+```bash
+cd frontend
+
+# Install the dependencies
+npm install
+
+# Start the development server
+npm run dev
+```
+*The application UI will now be accessible at: http://localhost:5173* 
+
+### 5. Running the Application
+Once both servers are running:
+1. Navigate to the frontend on [http://localhost:5173](http://localhost:5173).
+2. Click **Create Profile** as a Job Seeker and upload a mock resume PDF.
+3. Once logged in, open the "Company portal" on a separate incognito window, create a company, and post a test Job.
+4. Then apply for that job as the Job Seeker.
+5. Enter the `Proctored Session` and successfully navigate the UI's aptitude check and Technical Two-Sum code execution before proceeding to the 3D Audio-Interactive Llama 3 Technical AI Interview.

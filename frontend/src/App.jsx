@@ -38,8 +38,8 @@ const AppContent = () => {
             <Route path="/auth" element={<Auth />} />
             <Route path="/seeker-dashboard" element={<SeekerDashboard />} />
             <Route path="/company-dashboard" element={<CompanyDashboard />} />
-            <Route path="/setup" element={<InterviewSetup />} />
-            <Route path="/interview" element={<Interview />} />
+            <Route path="/setup/:applicationId" element={<InterviewSetup />} />
+            <Route path="/interview/:applicationId" element={<Interview />} />
           </Routes>
         </PageTransition>
       </main>

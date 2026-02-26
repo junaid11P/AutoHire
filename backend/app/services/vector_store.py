@@ -39,7 +39,19 @@ class MongoVectorStore:
     async def search_similar_chunks(self, query_embedding: List[float], limit: int = 5) -> List[Dict[str, Any]]:
         """
         Performs a Vector Search using MongoDB Atlas `$vectorSearch` aggregation.
-        Requires an Atlas Vector Search index named 'vector_index' on the 'embedding' field.
+        
+        Requires the following Atlas Vector Search index (e.g., named 'vector_index') 
+        on the 'resume_vectors' collection:
+        {
+          "fields": [
+            {
+              "type": "vector",
+              "path": "embedding",
+              "numDimensions": 384,
+              "similarity": "cosine"
+            }
+          ]
+        }
         """
         db = get_database()
         collection = db[self.collection_name]
@@ -48,7 +60,7 @@ class MongoVectorStore:
         pipeline = [
             {
                 "$vectorSearch": {
-                    "index": "vector_index",
+                    "index": "vector_index", # Important: Match this to the index name in Atlas!
                     "path": "embedding",
                     "queryVector": query_embedding,
                     "numCandidates": limit * 10,
