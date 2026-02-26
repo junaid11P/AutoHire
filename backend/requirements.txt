@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+python-multipart
+langchain-community
+langchain-text-splitters
+fastembed
+python-dotenv
+groq
+motor
+passlib[bcrypt]
+python-jose[cryptography]
+email-validator
+markitdown[all]
