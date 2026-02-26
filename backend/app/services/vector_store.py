@@ -3,7 +3,7 @@ from app.db.mongodb import get_database
 import logging
 
 class MongoVectorStore:
-    def __init__(self, collection_name: str = "resume_chunks"):
+    def __init__(self, collection_name: str = "resume_vectors"):
         self.collection_name = collection_name
 
     async def store_embeddings(self, user_id: str, filename: str, metadata: dict, chunks_payload: List[Dict[str, Any]]):

@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-primary text-white font-sans antialiased overflow-x-hidden;
+    background: radial-gradient(circle at top left, #2a2a72, #14143a 70%);
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-white/10 backdrop-blur-md border border-white/20 shadow-xl rounded-2xl;
+  }
+
+  .glass-button {
+    @apply bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 transition-all duration-300 font-medium rounded-lg px-6 py-2 shadow-lg hover:shadow-accent/30;
+  }
+
+  .glass-button-primary {
+    @apply bg-accent/80 hover:bg-accent backdrop-blur-sm border border-accent/50 transition-all duration-300 font-medium rounded-lg px-6 py-2 shadow-lg;
+    box-shadow: 0 0 15px rgba(108, 108, 229, 0.5);
+  }
+
+  .glass-button-primary:hover {
+    box-shadow: 0 0 25px rgba(108, 108, 229, 0.8);
+  }
+
+  .glass-input {
+    @apply bg-black/20 border border-white/10 focus:border-accent/50 rounded-lg px-4 py-2 outline-none transition-all placeholder-white/40 text-white backdrop-blur-sm focus:bg-black/30 w-full;
+  }
+}

@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     
     # Database
     MONGODB_URL: str = "mongodb://localhost:27017" # Default, to be overridden by .env
-    DATABASE_NAME: str = "autohire_db"
+    DATABASE_NAME: str = "ai_interview"
     
     # Security
     SECRET_KEY: str = "replace_this_with_a_secure_random_key_in_production"
