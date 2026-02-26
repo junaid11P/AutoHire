@@ -21,5 +21,3 @@ class JobResponse(JobBase):
     status: str
     created_at: datetime
     
-class JobInDB(JobResponse):
-    requirements_embedding: List[float]

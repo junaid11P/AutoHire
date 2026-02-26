@@ -10,6 +10,38 @@ export default function ProctoringCamera({ onViolation }) {
 
     // Integrity tracking states
     const [noFaceCount, setNoFaceCount] = useState(0);
+    const [eyeAwayCount, setEyeAwayCount] = useState(0);
+    const [lastViolationTime, setLastViolationTime] = useState(0);
+
+    const checkEyeMovement = (blendshapes) => {
+        if (!blendshapes || blendshapes.length === 0) return;
+
+        const shapes = blendshapes[0].categories;
+        const lookLeft = shapes.find(s => s.categoryName === 'eyeLookOutLeft')?.score || 0;
+        const lookRight = shapes.find(s => s.categoryName === 'eyeLookOutRight')?.score || 0;
+        const lookUp = shapes.find(s => s.categoryName === 'eyeLookUpLeft')?.score || 0;
+        const lookDown = shapes.find(s => s.categoryName === 'eyeLookDownLeft')?.score || 0;
+
+        // Threshold for anomaly
+        const THRESHOLD = 0.45;
+        if (lookLeft > THRESHOLD || lookRight > THRESHOLD || lookUp > THRESHOLD || lookDown > THRESHOLD) {
+            setEyeAwayCount(prev => prev + 1);
+            if (eyeAwayCount > 60) { // ~2 seconds at 30fps
+                sendViolation("Irregular eye movement - Please look at the screen");
+                setEyeAwayCount(0);
+            }
+        } else {
+            setEyeAwayCount(prev => Math.max(0, prev - 1));
+        }
+    };
+
+    const sendViolation = (msg) => {
+        const now = Date.now();
+        if (now - lastViolationTime > 5000) { // Throttling: 5 seconds
+            if (onViolation) onViolation(msg);
+            setLastViolationTime(now);
+        }
+    };
 
     useEffect(() => {
         let isMounted = true;
@@ -85,13 +117,13 @@ export default function ProctoringCamera({ onViolation }) {
 
                 if (results.faceBlendshapes && results.faceBlendshapes.length > 0) {
                     setNoFaceCount(0);
-                    // Reset or log active face
+                    checkEyeMovement(results.faceBlendshapes);
                 } else {
                     setNoFaceCount(prev => {
                         const newCount = prev + 1;
-                        if (newCount > 30) { // roughly 1 second at 30fps
-                            if (onViolation) onViolation("Face Missing - Please remain visible in camera");
-                            return 0; // reset to avoid spam calls
+                        if (newCount > 45) { // ~1.5 seconds
+                            sendViolation("Face Missing - Please remain visible in camera");
+                            return 0;
                         }
                         return newCount;
                     });
@@ -113,8 +145,8 @@ export default function ProctoringCamera({ onViolation }) {
                     REC
                 </div>
                 <div className={`font-semibold px-2 py-0.5 rounded text-[10px] border flex items-center gap-1 backdrop-blur-md shadow-sm ${status === "Tracking Active"
-                        ? "bg-green-500/20 text-green-400 border-green-500/30"
-                        : "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                    ? "bg-green-500/20 text-green-400 border-green-500/30"
+                    : "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
                     }`}>
                     {status === "Tracking Active" ? <CheckCircle size={10} /> : <AlertTriangle size={10} />}
                     {status}
@@ -124,7 +156,7 @@ export default function ProctoringCamera({ onViolation }) {
             <div className="h-40 md:h-48 w-full bg-[#111] rounded-lg flex flex-col items-center justify-center text-white/30 border border-white/5 relative overflow-hidden">
                 <video
                     ref={videoRef}
-                    className="absolute inset-0 w-full h-full object-cover rounded-lg"
+                    className="absolute inset-0 w-full h-full object-cover rounded-lg scale-x-[-1]"
                     onLoadedData={handleVideoPlay}
                     playsInline
                     muted

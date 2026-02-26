@@ -36,37 +36,27 @@ class MongoVectorStore:
                 logging.error(f"Failed to insert vector embeddings to MongoDB: {e}")
                 raise e
 
-    async def search_similar_chunks(self, query_embedding: List[float], limit: int = 5) -> List[Dict[str, Any]]:
+    async def search_similar_chunks(self, query_embedding: List[float], user_id: str = None, limit: int = 5) -> List[Dict[str, Any]]:
         """
         Performs a Vector Search using MongoDB Atlas `$vectorSearch` aggregation.
-        
-        Requires the following Atlas Vector Search index (e.g., named 'vector_index') 
-        on the 'resume_vectors' collection:
-        {
-          "fields": [
-            {
-              "type": "vector",
-              "path": "embedding",
-              "numDimensions": 384,
-              "similarity": "cosine"
-            }
-          ]
-        }
         """
         db = get_database()
         collection = db[self.collection_name]
         
         # MongoDB Atlas Vector Search Pipeline
+        vector_search_stage = {
+            "index": "vector_index",
+            "path": "embedding",
+            "queryVector": query_embedding,
+            "numCandidates": limit * 10,
+            "limit": limit
+        }
+
+        if user_id:
+            vector_search_stage["filter"] = {"user_id": user_id}
+
         pipeline = [
-            {
-                "$vectorSearch": {
-                    "index": "vector_index", # Important: Match this to the index name in Atlas!
-                    "path": "embedding",
-                    "queryVector": query_embedding,
-                    "numCandidates": limit * 10,
-                    "limit": limit
-                }
-            },
+            {"$vectorSearch": vector_search_stage},
             {
                 "$project": {
                     "_id": 0,

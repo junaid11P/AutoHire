@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from datetime import datetime
 from app.db.mongodb import get_database
 from app.services.sandbox import secure_run_python_code
@@ -18,9 +18,9 @@ router = APIRouter()
 
 class CalibrationPayload(BaseModel):
     application_id: str
-    facial_baseline: Dict[str, Any]
-    eye_range: Dict[str, Any]
-    body_positions: Dict[str, Any]
+    facial_baseline: Optional[Dict[str, Any]] = None
+    eye_range: Optional[Dict[str, Any]] = None
+    body_positions: Optional[Dict[str, Any]] = None
     voice_fingerprint_id: Optional[str] = None
     screen_share_status: bool
 
@@ -146,9 +146,10 @@ async def generate_ai_interview_round2(payload: ChatPayload, current_user: dict 
 
     # 2. Extract Job Requirements vector to construct resume RAG context dynamically
     job_embedding = job_doc["requirements_embedding"]
+    seeker_id = str(app_doc["user_id"])
     
     # 3. Retrieve Candidate's localized Resume Vectors specifically matched to the Job Req Vectors
-    matched_resume_chunks = await vector_store.search_similar_chunks(job_embedding, limit=3)
+    matched_resume_chunks = await vector_store.search_similar_chunks(job_embedding, user_id=seeker_id, limit=3)
     
     # Compress those vectors back into string English text chunks for Llama 3!
     context_chunks = "\\n".join([c["text"] for c in matched_resume_chunks])

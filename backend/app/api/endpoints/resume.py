@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, Form, Depends
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from app.api.deps import get_current_user
 from app.services.pdf_parser import parse_document_to_markdown
 from app.services.embedding import process_resume_embeddings

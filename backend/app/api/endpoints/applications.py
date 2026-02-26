@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 from app.db.mongodb import get_database
 from app.models.application import ApplicationCreate, ApplicationResponse
 from app.api.deps import get_current_user

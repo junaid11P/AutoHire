@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from typing import Any
 from datetime import timedelta
 
-from app.models.user import UserCreate, UserResponse, UserInDB
+from app.models.user import UserCreate, UserResponse
 from app.db.mongodb import get_database
 from app.api.deps import get_current_user
 from app.core.security import get_password_hash, verify_password, create_access_token

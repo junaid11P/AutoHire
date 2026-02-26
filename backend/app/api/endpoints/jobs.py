@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from app.db.mongodb import get_database
 from app.models.job import JobCreate, JobResponse
-from app.api.deps import get_current_active_company, get_current_user
+from app.api.deps import get_current_active_company
 from app.services.embedding import generate_embeddings
 from app.services.pdf_parser import parse_document_to_markdown
 from app.services.llm import extract_job_details_from_resume_with_llm

@@ -29,20 +29,3 @@ class ApplicationResponse(ApplicationBase):
     final_integrity_score: Optional[float] = None
     created_at: datetime
 
-class EvaluationScore(BaseModel):
-    aptitude_score: Optional[int] = None
-    coding_score: Optional[int] = None
-    technical_score: Optional[int] = None
-    integrity_score: Optional[int] = None
-    
-class InterviewSessionCreate(BaseModel):
-    application_id: str
-
-class InterviewSessionResponse(InterviewSessionCreate):
-    id: str
-    user_id: str
-    job_id: str
-    status: str # 'In Progress', 'Completed'
-    scores: EvaluationScore
-    ai_feedback: Optional[Dict[str, Any]] = None # Strengths, Weaknesses, Skill Gap Analysis
-    created_at: datetime

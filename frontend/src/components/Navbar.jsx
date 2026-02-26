@@ -1,8 +1,30 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { User, Menu } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { User, Menu, LogOut, LayoutDashboard } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userRole, setUserRole] = useState(null);
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        setIsLoggedIn(!!token);
+        setUserRole(role);
+    }, [location]); // Re-check on every navigation
+
+    const handleLogout = () => {
+        localStorage.clear(); // Clears token, role, user_id
+        setIsLoggedIn(false);
+        setUserRole(null);
+        navigate('/');
+    };
+
+    const dashboardLink = userRole === 'company' ? '/company-dashboard' : '/seeker-dashboard';
+
     return (
         <motion.nav
             initial={{ y: -100 }}
@@ -25,14 +47,29 @@ const Navbar = () => {
                 <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/80">
                     <a href="/#features" className="hover:text-white hover:text-shadow-sm transition-all duration-200">Features</a>
                     <a href="/#demo" className="hover:text-white hover:text-shadow-sm transition-all duration-200">Live Demo</a>
+                    {isLoggedIn && (
+                        <Link to={dashboardLink} className="hover:text-white hover:text-shadow-sm transition-all duration-200 flex items-center gap-1">
+                            <LayoutDashboard size={14} /> Dashboard
+                        </Link>
+                    )}
                 </div>
 
                 {/* Actions */}
                 <div className="flex items-center gap-4">
-                    <Link to="/auth" className="hidden md:flex items-center gap-2 text-white/80 hover:text-white transition-colors duration-200 text-sm font-medium">
-                        <User size={18} />
-                        <span>Login</span>
-                    </Link>
+                    {isLoggedIn ? (
+                        <button
+                            onClick={handleLogout}
+                            className="hidden md:flex items-center gap-2 text-white/80 hover:text-red-400 transition-colors duration-200 text-sm font-medium"
+                        >
+                            <LogOut size={18} />
+                            <span>Logout</span>
+                        </button>
+                    ) : (
+                        <Link to="/auth" className="hidden md:flex items-center gap-2 text-white/80 hover:text-white transition-colors duration-200 text-sm font-medium">
+                            <User size={18} />
+                            <span>Login</span>
+                        </Link>
+                    )}
                     <button className="md:hidden text-white/80">
                         <Menu size={24} />
                     </button>

@@ -10,9 +10,6 @@ class UserCreate(UserBase):
     password: str
     company_name: Optional[str] = None
 
-class UserInDB(UserBase):
-    id: str
-    hashed_password: str
     
 class UserResponse(UserBase):
     id: str

@@ -189,6 +189,31 @@ export default function InterviewSetup() {
         return true;
     };
 
+    const saveCalibration = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            await fetch("http://localhost:8000/api/v1/interviews/calibrate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    application_id: applicationId,
+                    facial_baseline: { centerX: 0, centerY: 0 }, // Mock baseline
+                    eye_range: { left: 0.1, right: 0.1, up: 0.1, down: 0.1 },
+                    body_positions: { shoulders: "centered" },
+                    screen_share_status: isScreenShared
+                })
+            });
+            navigate(`/interview/${applicationId}`);
+        } catch (err) {
+            console.error("Failed to save calibration", err);
+            // Fallback navigate
+            navigate(`/interview/${applicationId}`);
+        }
+    };
+
     return (
         <div className="min-h-[90vh] flex flex-col items-center justify-center p-4 z-10 relative">
             <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-accent/10 rounded-full blur-[120px] -z-10 mix-blend-screen pointer-events-none" />
@@ -240,7 +265,7 @@ export default function InterviewSetup() {
                             </button>
                         )}
                         <button
-                            onClick={step === 5 ? () => navigate(`/interview/${applicationId}`) : handleNextStep}
+                            onClick={step === 5 ? saveCalibration : handleNextStep}
                             disabled={!canContinue()}
                             className={`flex-[2] py-4 rounded-xl flex items-center justify-center font-extrabold transition-all disabled:opacity-30 disabled:cursor-not-allowed ${canContinue() ? 'bg-gradient-to-r from-accent to-purple-500 text-white shadow-lg shadow-accent/50 hover:scale-[1.02]' : 'bg-white/10 text-white/40'}`}
                         >

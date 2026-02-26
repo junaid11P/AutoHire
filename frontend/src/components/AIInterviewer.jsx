@@ -135,18 +135,43 @@ function TeacherModel({ isRecording, loading, isMuted, talking }) {
         }
     };
 
-    useFrame(() => {
+    useFrame((_threeState) => {
         // 1. Blinking
         morph("eye_close", blink ? 1 : 0, 0.25);
 
-        // Simple jaw drop animation for mockup "talking" when `talking` boolean is true
-        if (state === "Talking") {
-            const jawValue = (Math.sin(Date.now() / 100) + 1) / 2; // oscillates 0 to 1
-            morph(Object.keys(head.current?.morphTargetDictionary || {})[0], jawValue, 0.5);
-        } else {
-            if (head.current?.morphTargetDictionary) {
-                for (let i = 0; i <= 21; i++) morph(i.toString(), 0, 0.4);
+        // 2. Lip Sync Logic
+        if (state === "Talking" && props.lipSync) {
+            const currentTime = props.audioContextTime || 0; // Assume we pass current audio time
+            const cue = props.lipSync.mouthCues?.find(
+                (c) => currentTime >= c.start && currentTime <= c.end
+            );
+
+            if (cue) {
+                // Map Rhubarb A,B,C,D,E,F,G,H,X to morph targets
+                // For now, map to common jaw/mouth targets
+                const mouthTargets = {
+                    'A': { jawOpen: 0.1, mouthSmile: 0.1 },
+                    'B': { jawOpen: 0.2, mouthSmile: 0.2 },
+                    'C': { jawOpen: 0.4, mouthSmile: 0.1 },
+                    'D': { jawOpen: 0.6, mouthSmile: 0.1 },
+                    'E': { jawOpen: 0.3, mouthSmile: 0.3 },
+                    'F': { jawOpen: 0.5, mouthSmile: 0.1 },
+                    'G': { jawOpen: 0.2, mouthSmile: 0.4 },
+                    'H': { jawOpen: 0.1, mouthSmile: 0.5 },
+                    'X': { jawOpen: 0, mouthSmile: 0 }
+                };
+                const config = mouthTargets[cue.value] || mouthTargets['X'];
+                morph("jawOpen", config.jawOpen, 0.5);
+                morph("mouthSmile", config.mouthSmile, 0.5);
             }
+        } else if (talking) {
+            // Fallback: Simple jaw oscillation
+            const jawValue = (Math.sin(Date.now() / 100) + 1) / 2;
+            morph("jawOpen", jawValue * 0.6, 0.5);
+        } else {
+            // Reset mouth
+            morph("jawOpen", 0, 0.2);
+            morph("mouthSmile", 0, 0.2);
         }
     });
 
